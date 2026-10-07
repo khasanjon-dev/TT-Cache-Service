@@ -44,6 +44,13 @@ class GeneratedPayloadService:
 
         return payload.payload_id
 
+    def get_output(self, payload_id: str) -> str | None:
+        """Return the formatted payload output, or ``None`` when it is missing."""
+        payload = generated_payload_repository.get_by_payload_id(self._session, payload_id)
+        if payload is None:
+            return None
+        return ", ".join(payload.generated_output)
+
     @staticmethod
     def _request_hash(list_1: list[str], list_2: list[str]) -> str:
         """Hash a stable JSON representation that preserves both list boundaries."""

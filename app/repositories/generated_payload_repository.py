@@ -12,6 +12,11 @@ def get_by_request_hash(session: Session, request_hash: str) -> GeneratedPayload
     return session.scalar(statement)
 
 
+def get_by_payload_id(session: Session, payload_id: str) -> GeneratedPayload | None:
+    """Return a payload by its public identifier, if it exists."""
+    return session.get(GeneratedPayload, payload_id)
+
+
 def add_payload(
     session: Session,
     request_hash: str,
