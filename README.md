@@ -21,3 +21,14 @@ For local development, initialize any missing tables with:
 ```sh
 python -m app.database
 ```
+
+Install the command-line client with the project and submit a JSON request:
+
+```sh
+python -m pip install -e .
+cache-cli --json '{"list_1":["hello"],"list_2":["world"]}'
+```
+
+Use `-H`/`--host` for the service URL (`-h`/`--help` displays help), `--repeat`
+to send the same request multiple times, `--input` to read JSON from a file or
+stdin, and `--output` to write response JSON lines to a file or stdout.
