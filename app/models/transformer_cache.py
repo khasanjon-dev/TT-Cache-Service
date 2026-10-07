@@ -12,9 +12,7 @@ class TransformerCache(Base):
     """Store one transformer result for each deterministic input hash."""
 
     __tablename__ = "transformer_cache"
-    __table_args__ = (
-        UniqueConstraint("input_hash", name="uq_transformer_cache_input_hash"),
-    )
+    __table_args__ = (UniqueConstraint("input_hash", name="uq_transformer_cache_input_hash"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     input_hash: Mapped[str] = mapped_column(String(64), nullable=False)

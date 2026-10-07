@@ -10,9 +10,7 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_prefix="CACHE_", env_file=".env", extra="ignore")
 
-    database_url: str = (
-        "postgresql+psycopg://cache_user:cache_user_dev@localhost:5432/cache_db"
-    )
+    database_url: str = "postgresql+psycopg://cache_user:cache_user_dev@localhost:5432/cache_db"
 
 
 @lru_cache

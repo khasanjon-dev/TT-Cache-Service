@@ -13,9 +13,7 @@ class GeneratedPayload(Base):
     """Store generated output once per deterministic original-request hash."""
 
     __tablename__ = "generated_payloads"
-    __table_args__ = (
-        UniqueConstraint("request_hash", name="uq_generated_payloads_request_hash"),
-    )
+    __table_args__ = (UniqueConstraint("request_hash", name="uq_generated_payloads_request_hash"),)
 
     payload_id: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=lambda: str(uuid4())

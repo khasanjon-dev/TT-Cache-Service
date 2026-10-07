@@ -35,9 +35,7 @@ class GeneratedPayloadService:
                     generated_output=generated_output,
                 )
         except IntegrityError:
-            existing = generated_payload_repository.get_by_request_hash(
-                self._session, request_hash
-            )
+            existing = generated_payload_repository.get_by_request_hash(self._session, request_hash)
             if existing is None:
                 raise
             return existing.payload_id
