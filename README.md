@@ -32,3 +32,28 @@ cache-cli --json '{"list_1":["hello"],"list_2":["world"]}'
 Use `-H`/`--host` for the service URL (`-h`/`--help` displays help), `--repeat`
 to send the same request multiple times, `--input` to read JSON from a file or
 stdin, and `--output` to write response JSON lines to a file or stdout.
+
+## Docker
+
+Build and start the API with Docker Compose:
+
+```sh
+docker compose build
+docker compose up
+```
+
+The service is available at `http://localhost:8000`. Compose stores the SQLite
+database in the persistent `cache_data` volume at `/data/cache.db`; set
+`CACHE_DATABASE_PATH` in the Compose environment to change its container path.
+The container initializes missing tables when it starts. Stop it with
+`docker compose down`; the database volume remains available for the next start.
+
+Check the health endpoint and create/read a payload:
+
+```sh
+curl http://localhost:8000/health
+curl -X POST http://localhost:8000/payload \
+  -H 'Content-Type: application/json' \
+  -d '{"list_1":["first string","second string"],"list_2":["other string","another string"]}'
+curl http://localhost:8000/payload/<payload_id>
+```
