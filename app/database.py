@@ -30,3 +30,15 @@ def get_db_session() -> Generator[Session, None, None]:
         yield session
     finally:
         session.close()
+
+
+def initialize_database(target_engine: Engine = engine) -> None:
+    """Create tables for the registered models during development or tests."""
+    # Importing the model package registers all models with Base.metadata.
+    import app.models  # noqa: F401
+
+    Base.metadata.create_all(bind=target_engine)
+
+
+if __name__ == "__main__":
+    initialize_database()

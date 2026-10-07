@@ -15,3 +15,9 @@ uvicorn app.main:app --reload
 
 The SQLite database file defaults to `cache.db` in the current working
 directory. Set `CACHE_DATABASE_PATH` to choose another file path.
+
+For local development, initialize any missing tables with:
+
+```sh
+python -m app.database
+```
