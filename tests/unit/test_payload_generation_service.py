@@ -1,25 +1,11 @@
-from collections.abc import Iterator
-from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 
-from app.database import initialize_database
 from app.services.payload_generation_service import PayloadGenerationService
 from app.services.transformer import Transformer
 from app.services.transformer_cache_service import TransformerCacheService
-
-
-@pytest.fixture
-def session(tmp_path: Path) -> Iterator[Session]:
-    engine = create_engine(f"sqlite:///{tmp_path / 'payload.sqlite3'}")
-    initialize_database(engine)
-    factory = sessionmaker(bind=engine, expire_on_commit=False)
-    with factory() as database_session:
-        yield database_session
-    engine.dispose()
 
 
 def test_generate_interleaves_transformed_values() -> None:
@@ -61,14 +47,14 @@ def test_generate_rejects_unequal_lists_before_transforming() -> None:
     cache.transform.assert_not_called()
 
 
-def test_generate_reuses_transformer_cache(session: Session) -> None:
+def test_generate_reuses_transformer_cache(db_session: Session) -> None:
     transformer = Mock(spec=Transformer)
     transformer.transform.side_effect = lambda value: value.upper()
-    cache = TransformerCacheService(session, transformer)
+    cache = TransformerCacheService(db_session, transformer)
     service = PayloadGenerationService(cache)
 
     first_result = service.generate(["hello", "world"], ["hello", "again"])
-    session.commit()
+    db_session.commit()
     second_result = service.generate(["hello", "world"], ["hello", "again"])
 
     assert first_result == second_result == ["HELLO", "HELLO", "WORLD", "AGAIN"]

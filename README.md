@@ -13,8 +13,12 @@ python -m pip install -e '.[dev]'
 uvicorn app.main:app --reload
 ```
 
-The SQLite database file defaults to `cache.db` in the current working
-directory. Set `CACHE_DATABASE_PATH` to choose another file path.
+The database URL is configurable through `CACHE_DATABASE_URL`. For local
+development, for example:
+
+```sh
+export CACHE_DATABASE_URL='postgresql+psycopg://cache_user:password@localhost:5432/cache_db'
+```
 
 For local development, initialize any missing tables with:
 
@@ -42,11 +46,18 @@ docker compose build
 docker compose up
 ```
 
-The service is available at `http://localhost:8000`. Compose stores the SQLite
-database in the persistent `cache_data` volume at `/data/cache.db`; set
-`CACHE_DATABASE_PATH` in the Compose environment to change its container path.
-The container initializes missing tables when it starts. Stop it with
+The API is available at `http://localhost:8000`; PostgreSQL is available to
+local tools on `localhost:5432` and inside Compose on port 5432. Database files
+persist in the `postgres_data` volume.
+Set `POSTGRES_PASSWORD` in your shell or a local `.env` file to override the
+development default. Compose waits for PostgreSQL's health check before starting
+the API, which initializes missing tables at startup. Stop the services with
 `docker compose down`; the database volume remains available for the next start.
+
+To run tests against PostgreSQL, set `TEST_DATABASE_URL` to a dedicated test
+database URL. Test fixtures drop and recreate the application's tables, so do
+not point it at a database containing data you need to keep. If unset, tests use
+an isolated temporary SQLite database.
 
 Check the health endpoint and create/read a payload:
 

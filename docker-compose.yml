@@ -4,11 +4,12 @@ services:
     ports:
       - "8000:8000"
     environment:
-      CACHE_DATABASE_PATH: /data/cache.db
+      CACHE_DATABASE_URL: postgresql+psycopg://cache_user:${POSTGRES_PASSWORD:-cache_user_dev}@postgres:5432/cache_db
       WEB_CONCURRENCY: "2"
-    volumes:
-      - cache_data:/data
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test:
         - CMD
@@ -19,6 +20,24 @@ services:
       timeout: 3s
       retries: 3
       start_period: 5s
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_DB: cache_db
+      POSTGRES_USER: cache_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cache_user_dev}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
 volumes:
-  cache_data:
+  postgres_data:

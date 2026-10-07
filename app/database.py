@@ -2,7 +2,7 @@
 
 from collections.abc import Generator
 
-from sqlalchemy import URL, Engine, create_engine
+from sqlalchemy import Engine, create_engine, make_url
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import get_settings
@@ -12,11 +12,10 @@ class Base(DeclarativeBase):
     """Declarative base for persistence models."""
 
 
-def create_database_engine(database_path: str | None = None) -> Engine:
-    """Create a SQLite engine for the configured database file."""
-    path = database_path or str(get_settings().database_path)
-    url = URL.create("sqlite", database=path)
-    return create_engine(url, connect_args={"check_same_thread": False})
+def create_database_engine(database_url: str | None = None) -> Engine:
+    """Create a PostgreSQL engine from the configured SQLAlchemy URL."""
+    url = make_url(database_url or get_settings().database_url)
+    return create_engine(url, pool_pre_ping=True)
 
 
 engine = create_database_engine()

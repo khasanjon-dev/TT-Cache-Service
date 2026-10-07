@@ -1,30 +1,32 @@
 from collections.abc import Iterator
-from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.database import get_db_session, initialize_database
+from app.database import get_db_session
 from app.main import app
 
 
 @pytest.fixture
-def client(tmp_path: Path) -> Iterator[TestClient]:
-    engine = create_engine(f"sqlite:///{tmp_path / 'api.sqlite3'}")
-    initialize_database(engine)
-    factory = sessionmaker(bind=engine, expire_on_commit=False)
+def client(db_engine: Engine) -> Iterator[TestClient]:
+    factory = sessionmaker(bind=db_engine, expire_on_commit=False)
 
     def override_session() -> Iterator[Session]:
         with factory() as session:
             yield session
 
+    previous_override = app.dependency_overrides.get(get_db_session)
     app.dependency_overrides[get_db_session] = override_session
-    with TestClient(app) as test_client:
-        yield test_client
-    app.dependency_overrides.clear()
-    engine.dispose()
+    try:
+        with TestClient(app) as test_client:
+            yield test_client
+    finally:
+        if previous_override is None:
+            app.dependency_overrides.pop(get_db_session, None)
+        else:
+            app.dependency_overrides[get_db_session] = previous_override
 
 
 def test_post_creates_payload(client: TestClient) -> None:
