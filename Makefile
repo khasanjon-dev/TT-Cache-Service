@@ -3,9 +3,6 @@
 PYTHON := .venv/bin/python
 RUFF := .venv/bin/ruff
 
-POSTGRES_PASSWORD ?= cache_user_dev
-TEST_DATABASE_URL := postgresql+psycopg://cache_user:$(POSTGRES_PASSWORD)@localhost:5432/cache_test
-
 .PHONY: install dev test lint format check docker-up docker-down docker-test clean help
 
 install: ## Install project dependencies
@@ -38,11 +35,8 @@ docker-down: ## Stop Docker services
 
 docker-test: ## Run tests using a dedicated PostgreSQL test database
 	@docker compose up -d postgres
-	@if ! docker compose exec -T postgres psql -U cache_user -d cache_db -tAc
-		"SELECT 1 FROM pg_database WHERE datname = 'cache_test'" | grep -q 1; then
-		docker compose exec -T postgres createdb -U cache_user cache_test;
-	fi
-	@TEST_DATABASE_URL='$(TEST_DATABASE_URL)' $(PYTHON) -m pytest
+	@docker compose exec -T postgres sh -c 'createdb -U "$$POSTGRES_USER" "$$1" >/dev/null 2>&1 || psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -lqt | grep -q "$$1"' sh cache_test
+	@export TEST_DATABASE_URL="$$(docker compose config --format json | $(PYTHON) -c 'import json, sys; from sqlalchemy.engine import URL; env = json.load(sys.stdin)["services"]["postgres"]["environment"]; print(URL.create("postgresql+psycopg", username=env["POSTGRES_USER"], password=env["POSTGRES_PASSWORD"], host="localhost", port=5432, database="cache_test").render_as_string(hide_password=False))')" && $(PYTHON) -m pytest
 
 clean: ## Remove Python and tool caches
 	@rm -rf .pytest_cache .ruff_cache build dist

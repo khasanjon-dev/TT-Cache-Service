@@ -10,9 +10,7 @@ COPY pyproject.toml README.md ./
 COPY app ./app
 
 RUN python -m pip install --no-cache-dir . \
-    && useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin appuser \
-    && mkdir -p /data \
-    && chown appuser:appuser /data
+    && useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin appuser
 
 USER appuser
 
