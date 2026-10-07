@@ -12,3 +12,6 @@ in editable mode:
 python -m pip install -e '.[dev]'
 uvicorn app.main:app --reload
 ```
+
+The SQLite database file defaults to `cache.db` in the current working
+directory. Set `CACHE_DATABASE_PATH` to choose another file path.
