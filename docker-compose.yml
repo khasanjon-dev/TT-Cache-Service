@@ -4,7 +4,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      CACHE_DATABASE_URL: postgresql+psycopg://cache_user:${POSTGRES_PASSWORD:-cache_user_dev}@postgres:5432/cache_db
+      CACHE_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-cache_user}:${POSTGRES_PASSWORD:-cache_user_dev}@postgres:5432/${POSTGRES_DB:-cache_db}
       WEB_CONCURRENCY: "2"
     restart: unless-stopped
     depends_on:
@@ -25,8 +25,8 @@ services:
     ports:
       - "127.0.0.1:5432:5432"
     environment:
-      POSTGRES_DB: cache_db
-      POSTGRES_USER: cache_user
+      POSTGRES_DB: ${POSTGRES_DB:-cache_db}
+      POSTGRES_USER: ${POSTGRES_USER:-cache_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cache_user_dev}
     volumes:
       - postgres_data:/var/lib/postgresql/data

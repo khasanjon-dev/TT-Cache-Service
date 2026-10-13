@@ -11,8 +11,9 @@ install: ## Install project dependencies
 
 dev: ## Start PostgreSQL and run the API locally
 	@docker compose up -d postgres
-	@$(PYTHON) -m app.init_db
-	@$(PYTHON) -m uvicorn app.main:app --reload
+	@DATABASE_URL="$$(docker compose config --format json | $(PYTHON) -c 'import json, sys; from sqlalchemy.engine import URL; env = json.load(sys.stdin)["services"]["postgres"]["environment"]; print(URL.create("postgresql+psycopg", username=env["POSTGRES_USER"], password=env["POSTGRES_PASSWORD"], host="localhost", port=5432, database=env["POSTGRES_DB"]).render_as_string(hide_password=False))')" && \
+		CACHE_DATABASE_URL="$$DATABASE_URL" $(PYTHON) -m app.init_db && \
+		CACHE_DATABASE_URL="$$DATABASE_URL" $(PYTHON) -m uvicorn app.main:app --reload
 
 test: ## Run all tests against PostgreSQL
 	@$(MAKE) docker-test
